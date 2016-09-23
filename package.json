@@ -1,0 +1,17 @@
+{
+  "name": "Better_Swipe",
+  "main": "index.html",
+  "version": "0.0.1",
+  "window": {
+    "title": "MEAM Swipe Access",
+    "toolbar": false,
+    "width": 500,
+    "height": 650,
+    "position": "center",
+    "resizable": false,
+    "fullscreen": false
+  },
+  "dependencies": {
+    "jsonfile": "^2.4.0"
+  }
+}

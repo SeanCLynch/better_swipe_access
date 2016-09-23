@@ -1,0 +1,22 @@
+{
+    "main": [
+        {
+          "firstname": "Sean",
+          "lastname": "Lynch",
+          "idnum": 27654403,
+          "level": 5
+        },
+        {
+          "firstname": "Cheryl",
+          "lastname": "Liu",
+          "idnum": 56968342,
+          "level": 4
+        },
+        {
+          "firstname": "Elizabeth",
+          "lastname": "Silvestro",
+          "idnum": 65104136,
+          "level": 5
+        }
+    ]
+}
