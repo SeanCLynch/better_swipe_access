@@ -1,49 +1,23 @@
 // Example Swipe:
 // %B5643302765440301^LYNCH/JOHN C              ^491212000000?;5643302765440301=491212000000?
 
-// WE ARE USING NEDB AND WE ARE GOING TO LIKE IT.
-// FINDONE(X) IS NOT WORKING ATM.... DEBUG.
-
-var low = require('lowdb');
-var db = low(nw.App.dataPath + '/db.json');
-db.defaults({ logs: [], users: [] }).value();
-db.set('users', []).value();
-db.get('users').push({
-    "firstname": "Sean",
-    "lastname": "Lynch",
-    "idnum": 27654403,
-    "level": 5,
-    "provisional": false
-}).value();
-
+// Setup
+var gui = require('nw.gui');
 var Datastore = require('nedb');
 var path = require('path');
 
-var users = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'users.db') });
-var users = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'logs.db') });
+global.users = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'users.db'), autoload: true  });
+global.logs = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'logs.db'), autoload: true  });
+global.currUsers = [];
 
-users.insert({
-    "firstname": "Sean",
-    "lastname": "Lynch",
-    "idnum": 27654403,
-    "level": 5,
-    "provisional": false
+
+$(function () {
+// Start Logs
+global.users.count({}, function (err, count1) {
+  global.logs.count({}, function (err, count2) {
+    console.log('Init | U:', count1, 'L:', count2, 'C:', global.currUsers);
+  });
 });
-
-users.findOne({ idnum: 27654403 }, function (err, docs) {
-  console.log("X", docs[0]);
-});
-
-var gui = require('nw.gui');
-
-// var jsonfile = require('jsonfile');
-// jsonfile.spaces = 2;
-// var logs = './userLog.json';
-// var userDB = './users.json';
-
-// In memory array of users
-var currUsers = [];
-console.log('At Startup', currUsers[0]);
 
 // Main Event Loop
 var timeout = null;
@@ -54,82 +28,56 @@ $('#input').on('keyup', function (e) {
     var input = $(e.target).val();
     var valid = input.includes("%B564330");
     var num = input.substring(8, 16);
-    // var lastname = input.substring(input.indexOf('^') + 1, input.indexOf('/'));
 
-    console.log('At start', currUsers);
-
-    // React to swipe.
+    // Is the swipe valid/legible?
     if (valid) {
-      var userPresent = currUsers.filter(function (elem, index, arr) { return elem.idnum == num; });
-      // console.log(userPresent[0].idnum);
-      if (Object.keys(userPresent).length > 0) {
-        // Remove and log user
-        console.log("Removing user", userPresent[0].idnum);
-        currUsers = currUsers.filter(function (user, index, arr) {
-          return user.idnum != userPresent[0].idnum;
-        });
+      var swipedInUser = global.currUsers.filter(function (elem) { return elem._id == num; });
+
+      // Is there a swiped in user?
+      if (Object.keys(swipedInUser).length > 0) {
+        // console.log("Removing user", swipedInUser[0]._id);
+
+        // Remove user from currUsers
+        global.currUsers = global.currUsers.filter(function (user) { return user._id != swipedInUser[0]._id; });
+        // Generate Log
         var now = moment();
-        var hrs = now.diff(userPresent[0].sessionStart, 'hours');
-        var min = now.diff(userPresent[0].sessionStart, 'minutes');
+        var hrs = now.diff(swipedInUser[0].sessionStart, 'hours');
+        var min = now.diff(swipedInUser[0].sessionStart, 'minutes');
         var duration = hrs + " hrs : " + min + " min";
         var log = {
-          'firstname': userPresent[0].firstname,
-          'lastname': userPresent[0].lastname,
-          'idnum': userPresent[0].idnum,
-          'level': userPresent[0].level,
-          'starttime': userPresent[0].sessionStart.format('L LT'),
-          'startmoment': userPresent[0].sessionStart,
+          'firstname': swipedInUser[0].firstname,
+          'lastname': swipedInUser[0].lastname,
+          '_id': swipedInUser[0]._id,
+          'level': swipedInUser[0].level,
+          'starttime': swipedInUser[0].sessionStart.format('L LT'),
+          'startmoment': swipedInUser[0].sessionStart,
           'endtime': now.format('L LT'),
           'duration': duration
         }
-        // (((HERE)))
-        db.get('logs').push(log).value();
-        renderUserList();
-
-        // jsonfile.readFile(logs, function(err, obj) {
-        //   if (err) throw err;
-        //   obj.main.push(log);
-        //   jsonfile.writeFileSync(logs, obj);
-        //   renderUserList();
-        // });
-      } else {
-        // Add user to current list
-        console.log("Adding user", num);
-        // (((HERE)))
-        try {
-          // WTF IS GOING ON, SHOULD NOT BE THIS HARD TO "GET"
-          console.log("A", db.get('users').filter({ 'idnum': num }).take(1).value());
-          console.log("B", db.get('users').filter({ 'idnum': num }).take(1).clone().value());
-          var existingUser = db.get('users').filter({ 'idnum': num }).take(1).clone();
-          if (existingUser.provisional) { alert("Please see professional staff."); }
-          existingUser.sessionStart = moment();
-          currUsers.push(existingUser);
+        // Insert Log
+        global.logs.insert(log, function (err, resDoc) {
+          console.log("Inserted Log:", resDoc);
           renderUserList();
-        } catch (e) {
-          if (e instanceof TypeError) {
-            console.log(e);
-            alert("User is not in system. Ask an admin to add them.");
-            renderUserList();
-          }
-        }
-        // jsonfile.readFile(userDB, function(err, obj) {
-        //   if (err) throw err;
-        //   var tmpUserData = obj.main.filter(function (usr, idx) {
-        //     return usr.idnum == num;
-        //   });
-        //   if (tmpUserData[0].level == 2) { alert("Please see professional staff."); }
-        //   tmpUserData[0].sessionStart = userSessionStart;
-        //   currUsers.push(tmpUserData[0]);
-        //   renderUserList();
-        // });
+        });
+
+      } else { // There is no swiped in user.
+        // console.log("Adding user", num);
+
+        // So check they exist, and add them.
+        global.users.findOne({ _id: Number(num)}, function (err, res) {
+          if (!res) { alert("No Such User Exists!"); }
+          if (res.provisional) { alert("Please see professional staff."); }
+          res.sessionStart = moment();
+          global.currUsers.push(res);
+          renderUserList();
+        });
       }
-      $('#input').val('');
-    } else {
-      // Invalid Swipe
-      $('#input').val('');
+    } else { // The swipe is invalid.
       $('#input').focus();
       $('.fluid.action.input').addClass('error');
     }
+    // Cleanup
+    $('#input').val('');
   }, 500);
 });
 
@@ -145,21 +93,21 @@ var resetUI = function () {
 resetUI();
 
 var renderUserList = function () {
+  // console.log("Rendering:", currUsers);
+
+  // Update the member list UI.
   $('#userList').html('');
-  console.log('pre-render', currUsers);
-  currUsers.forEach(function (user) {
-    console.log(user);
+  global.currUsers.forEach(function (user) {
     $('#userList').append('<div class="item">' +
         '<i class="configure icon"></i>' +
         '<div class="content">' +
-          user.level + ' |  ' + user.idnum + ' | ' + user.firstname + ' ' + user.lastname +
+          user.level + (user.provisional ? 'P' : ' ') + ' |  ' + user._id + ' | ' + user.firstname + ' ' + user.lastname +
         '</div>' +
     '</div>');
   });
-  var authorization = currUsers.filter(function (item) {
-    return (item.level > 4);
-  });
-  // console.log(authorization);
+
+  // Check for authorization level.
+  var authorization = global.currUsers.filter(function (item) { return (item.level > 4); });
   if (authorization.length > 0) {
     $('#add').removeClass('disabled');
     $('#edit').removeClass('disabled');
@@ -168,3 +116,4 @@ var renderUserList = function () {
     resetUI();
   }
 };
+});

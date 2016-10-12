@@ -7,6 +7,7 @@
     <script src="./public/external/jquery-3.1.0.js"></script>
     <script src="./public/external/semantic.js"></script>
     <script src="./public/external/moment.js"></script>
+    <script src="./node_modules/pouchdb/dist/pouchdb.min.js"></script>
     <style>
       a {
         cursor: pointer;
@@ -42,22 +43,22 @@
 
           <div>
             <button id="quit" class="ui red button">Close App</button>
-            <button id="shopjob" class="ui yellow button">Shop Job</button>
+            <button id="shopjob" class="ui purple button">Shop Job</button>
           </div>
 
           <br />
 
           <div>
-            <button id="delete" class="ui orange button">Delete User</button>
-            <button id="edit" class="ui blue button">Modify User</button>
-            <button id="add" class="ui green button">Add User</button>
+            <button id="delete" class="ui red button">Delete User</button>
+            <button id="edit" class="ui violet button">Modify User</button>
+            <button id="add" class="ui blue button">Add User</button>
           </div>
 
           <!-- <div class="ui horizontal divider"></div> -->
           <br />
 
           <div>
-            <button id="all" class="ui blue button">All Logs</button>
+            <button id="all" class="ui teal button">All Logs</button>
             <button id="today" class="ui green button">Today's Logs</button>
           </div>
 
@@ -154,7 +155,8 @@
     <div class="ui long modal logs">
       <!-- <i class="close icon"></i> -->
       <div class="header">
-        Logs
+        <!-- Logs <div class="sub header">(num | level | id lastname | logout | duration)</div> -->
+        Logs <span style='font-size: 0.70em;'>[num | level | id | lastname | logout | duration]</span>
       </div>
       <div class="content">
         <div id="logsList" class="ui divided list">

@@ -1,3 +1,4 @@
+$(function () {
 
 // ========= User actions =========
 
@@ -15,26 +16,19 @@ $('#addSave').on('click', function (e) {
   e.preventDefault();
   var firstname = $('.add input[name="first-name"]').val();
   var lastname = $('.add input[name="last-name"]').val();
-  var idnum = $('.add input[name="id-num"]').val();
+  var _id = $('.add input[name="id-num"]').val();
   var level = $('.add #level').val();
   var prov = $('.add #provisional').is(':checked');
   var newUser = {
     "firstname": firstname,
     "lastname": lastname,
-    "idnum": idnum,
+    "_id": _id,
     "level": level,
     "provisional": prov
   }
-  // (((HERE)))
-  db.get('users').push(newUser);
-  $('.ui.modal.add').modal('hide');
-
-  // jsonfile.readFile(userDB, function(err, obj) {
-  //   if (err) throw err;
-  //   obj.main.push(newUser);
-  //   jsonfile.writeFileSync(userDB, obj);
-  // });
-  // $('.ui.modal.add').modal('hide');
+  global.users.insert(newUser, function (err, resDoc) {
+    $('.ui.modal.add').modal('hide');
+  });
 });
 
 
@@ -51,16 +45,10 @@ $('#deleteClose').on('click', function (e) {
 
 $('#deleteButton').on('click', function (e) {
   e.preventDefault();
-  var idnum = $('.delete input[name="id-num"]').val();
-  // (((HERE)))
-  db.get('users').remove({ 'idnum': idnum });
-  // jsonfile.readFile(userDB, function(err, obj) {
-  //   if (err) throw err;
-  //   obj.main.filter(function (usr, i) {
-  //     return usr.idnum != idnum;
-  //     jsonfile.writeFileSync(userDB, obj);
-  //   });
-  // });
+  var _id = $('.delete input[name="id-num"]').val();
+  global.users.remove({ '_id': _id}, {}, function (err, res) {
+    $('.delete input[name="id-num"]').val('');
+  });
 });
 
 
@@ -79,18 +67,20 @@ $('#editSave').on('click', function (e) {
   e.preventDefault();
   var firstname = $('.edit input[name="first-name"]').val();
   var lastname = $('.edit input[name="last-name"]').val();
-  var idnum = $('.edit input[name="id-num"]').val();
+  var _id = $('.edit input[name="id-num"]').val();
   var level = $('.edit #level').val();
   var prov = $('.add #provisional').is(':checked');
   var updatedUser = {
     "firstname": firstname,
     "lastname": lastname,
-    "idnum": idnum,
+    "_id": _id,
     "level": level,
     "provisional": prov
   }
-  db.get('users').find({ 'idnum': idnum}).assign(updatedUser);
-  $('.ui.modal.add').modal('hide');
+  global.users.update({ '_id': idnum}, updatedUser, {}, function (err, num, docs) {
+    console.log(err, num, docs);
+    $('.ui.modal.add').modal('hide');
+  });
 });
 
 // ========= Logs =========
@@ -98,72 +88,36 @@ $('#editSave').on('click', function (e) {
 $('#all').on('click', function (e) {
   e.preventDefault();
   // (((HERE)))
-  try {
-    db.get('logs').value().forEach(function (log, i) {
+  global.logs.find({}, function (err, docs) {
+    docs.forEach(function (log, i) {
       $('#logsList').append(
         '<div class="item">' +
           '<div class="content">' +
-            i + ' | ' + log.level + ' |  ' + log.idnum + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
+            '#' + i + ' | ' + log.level + ' |  ' + log._id + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
           '</div>' +
         '</div>'
       );
     });
-  } catch (e) {
-    if (e instanceof TypeError) {
-      $('#logsList').append('Sorry, no logs yet.');
-    }
-  }
-  $('.ui.modal.logs').modal('refresh').modal('show');
-
-
-  // jsonfile.readFile(logs, function (err, obj) {
-  //   if (err) throw err;
-  //   obj.main.forEach(function (log, i) {
-  //     $('#logsList').append('<div class="item">' +
-  //         '<div class="content">' +
-  //           i + ' | ' + log.level + ' |  ' + log.idnum + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
-  //         '</div>' +
-  //     '</div>');
-  //   });
-
+    $('.ui.modal.logs').modal('refresh').modal('show');
+  });
 });
 
 $('#today').on('click', function (e) {
   e.preventDefault();
-  // (((HERE)))
   var atm = moment();
-  try {
-    db.get('logs').filter(function (l) {
-      return moment(l.startmoment).isSame(atm, 'day');
-    }).value().forEach(function (log, i) {
+
+  global.logs.find({ $where: function () {
+    return moment(this.startmoment).isSame(atm, 'day');
+  }}, function (err, docs) {
+    docs.forEach(function (log, i) {
       $('#logsList').append('<div class="item">' +
           '<div class="content">' +
-            i + ' | ' + log.level + ' |  ' + log.idnum + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
+            '#' + i + ' | ' + log.level + ' |  ' + log._id + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
           '</div>' +
       '</div>');
     });
-  } catch (e) {
-    if (e instanceof TypeError) {
-      $('#logsList').append('Sorry, no logs yet.');
-    }
-  }
-
-  $('.ui.modal.logs').modal('refresh').modal('show');
-
-  // jsonfile.readFile(logs, function (err, obj) {
-  //   if (err) throw err;
-  //   var atm = moment();
-  //   obj.main.filter(function (log, indx) {
-  //     return moment(log.startmoment).isSame(atm, "day");
-  //   }).forEach(function (log, i) {
-  //     $('#logsList').append('<div class="item">' +
-  //         '<div class="content">' +
-  //           i + ' | ' + log.level + ' |  ' + log.idnum + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
-  //         '</div>' +
-  //     '</div>');
-  //   });
-  //   $('.ui.modal.logs').modal('refresh').modal('show');
-  // });
+    $('.ui.modal.logs').modal('refresh').modal('show');
+  });
 });
 
 $('#logsClose').on('click', function (e) {
@@ -174,7 +128,7 @@ $('#logsClose').on('click', function (e) {
 
 // ========= Misc. =========
 
-$('.help_button').on('click', function () {
+$('.help_button').on('click', function (e) {
   gui.Shell.openExternal("https://github.com/SeanCLynch/better_swipe_access/blob/master/public/help.txt");
 });
 
@@ -213,8 +167,9 @@ $('#shopjob').on('click', function (e) {
 
 $('#quit').on('click', function (e) {
   e.preventDefault();
-  currUsers.forEach(function (usr, i) {
-    console.log("Removing user", usr.idnum);
+  global.currUsers.forEach(function (usr, i) {
+    // console.log("Removing user", usr._id);
+
     var now = moment();
     var hrs = now.diff(usr.sessionStart, 'hours');
     var min = now.diff(usr.sessionStart, 'minutes');
@@ -222,21 +177,18 @@ $('#quit').on('click', function (e) {
     var log = {
       'firstname': usr.firstname,
       'lastname': usr.lastname,
-      'idnum': usr.idnum,
+      '_id': usr._id,
       'level': usr.level,
       'starttime': usr.sessionStart.format('L LT'),
       'startmoment': usr.sessionStart,
       'endtime': now.format('L LT'),
       'duration': duration
     };
-    // (((HERE)))
-    db.get('logs').push(log);
-    // jsonfile.readFile(logs, function(err, obj) {
-    //   if (err) throw err;
-    //   obj.main.push(log);
-    //   jsonfile.writeFileSync(logs, obj);
-    // });
+    global.logs.insert(log, function (err, res) {
+      console.log("Quitting. Saved:", res._id);
+    });
   });
-  renderUserList();
   nw.App.quit();
+});
+
 });

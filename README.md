@@ -1,6 +1,6 @@
 #Better Swipe Access
 
-BSA is an ugly-yet-functional card-swipe access system built with node-webkit or nwjs. Originally built to be used with a usb magnetic card reader. Users can swipe in and out, be added, modified or deleted, and have different levels of authorization. Also logs are kept of all user activity with start time, end time and duration. The next big step is to split up and organize the index.html file and to complete the TODOs below.    
+BSA is an ugly-yet-functional card-swipe access system built with nwjs (formerly node-webkit). Originally built to be used with a usb magnetic card reader. Users can swipe in and out, be added, modified or deleted, and have different levels of authorization. Also logs are kept of all user activity with start time, end time and duration.
 
 To run in development (on mac) (w/ nw.js installed) from better_swipe working directory:
 
@@ -18,8 +18,12 @@ Access Levels:
  5. Admin
 
 TODOs:
-- Edit User
+
+Finished Product:
+- Dry Run
+- Import Previous Users?
+
+Extras:
+- Code Clean
+- Logging
 - Tool Loan
-- Provisional -> additional field for users, check and popup.
-- github link ->     gui.Shell.openExternal("http://website.com")
-- readme link -> remarkable?
