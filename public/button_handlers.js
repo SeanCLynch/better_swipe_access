@@ -175,7 +175,7 @@ $('#logsClose').on('click', function (e) {
 // ========= Misc. =========
 
 $('.help_button').on('click', function () {
-  gui.Shell.openExternal("https://github.com/SeanCLynch/better_swipe_access/public/help.txt");
+  gui.Shell.openExternal("https://github.com/SeanCLynch/better_swipe_access/blob/master/public/help.txt");
 });
 
 $('.source_button').on('click', function (e) {
