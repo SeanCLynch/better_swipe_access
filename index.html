@@ -2,14 +2,21 @@
 <html>
   <head>
     <title>MEAM Swipe Access</title>
-    <link rel="stylesheet" href="./public/semantic.css" />
-    <link rel="stylesheet" href="./public/icon.css" />
-    <script src="./public/jquery-3.1.0.js"></script>
-    <script src="./public/semantic.js"></script>
-    <script src="./public/moment.js"></script>
+    <link rel="stylesheet" href="./public/external/semantic.css" />
+    <link rel="stylesheet" href="./public/external/icon.css" />
+    <script src="./public/external/jquery-3.1.0.js"></script>
+    <script src="./public/external/semantic.js"></script>
+    <script src="./public/external/moment.js"></script>
+    <style>
+      a {
+        cursor: pointer;
+      }
+    </style>
   </head>
   <body>
-    <div class="ui grid" style="height:650px;">
+
+    <!-- Main GUI -->
+    <div class="ui grid" style="width: 520px; height:650px;">
       <div class="column">
         <div class="ui container" style="margin-top:2em;">
 
@@ -35,6 +42,12 @@
 
           <div>
             <button id="quit" class="ui red button">Close App</button>
+            <button id="shopjob" class="ui yellow button">Shop Job</button>
+          </div>
+
+          <br />
+
+          <div>
             <button id="delete" class="ui orange button">Delete User</button>
             <button id="edit" class="ui blue button">Modify User</button>
             <button id="add" class="ui green button">Add User</button>
@@ -44,18 +57,18 @@
           <br />
 
           <div>
-            <button id="shopjob" class="ui yellow button">Shop Job</button>
             <button id="all" class="ui blue button">All Logs</button>
             <button id="today" class="ui green button">Today's Logs</button>
           </div>
 
         </div>
         <div class="ui container" style="position:absolute; bottom:0;">
-          <small>Sean Lynch | <a href="https://github.com">Source</a> | <a>Readme</a> </small>
+          <small>Sean Lynch | <a class="source_button">Source</a> | <a class="help_button">Readme</a> </small>
         </div>
       </div>
     </div>
 
+    <!-- Add Modal -->
     <div class="ui modal add">
       <!-- <i class="close icon"></i> -->
       <div class="header">
@@ -81,10 +94,14 @@
               <option value="">Level</option>
               <option value="1">One</option>
               <option value="2">Two</option>
-              <option value="3">Two</option>
-              <option value="4">Two</option>
-              <option value="5">Two</option>
+              <option value="3">Three</option>
+              <option value="4">Four</option>
+              <option value="5">Five</option>
             </select>
+          </div>
+          <div class="field">
+            <label>Provisional</label>
+            <input id="provisional" type="checkbox" />
           </div>
           <button id="addCancel" class="ui button">Cancel</button>
           <button id="addSave" class="ui green button" type="submit">Submit</button>
@@ -92,6 +109,7 @@
       </div>
     </div>
 
+    <!-- Edit Modal -->
     <div class="ui modal edit">
       <!-- <i class="close icon"></i> -->
       <div class="header">
@@ -107,7 +125,7 @@
             <label>Last Name</label>
             <input name="last-name" placeholder="Last Name" type="text">
           </div>
-          <div class="field">
+          <div class="required field">
             <label>Penn ID Number</label>
             <input name="id-num" placeholder="ID Number" type="text">
           </div>
@@ -117,7 +135,14 @@
               <option value="">Level</option>
               <option value="1">One</option>
               <option value="2">Two</option>
+              <option value="3">Three</option>
+              <option value="4">Four</option>
+              <option value="5">Five</option>
             </select>
+          </div>
+          <div class="field">
+            <label>Provisional</label>
+            <input id="provisional" type="checkbox" />
           </div>
           <button id="editCancel" class="ui button">Cancel</button>
           <button id="editSave" class="ui green button" type="submit">Save</button>
@@ -125,6 +150,7 @@
       </div>
     </div>
 
+    <!-- (Both) Logs Modal -->
     <div class="ui long modal logs">
       <!-- <i class="close icon"></i> -->
       <div class="header">
@@ -138,6 +164,7 @@
       </div>
     </div>
 
+    <!-- Delete Modal -->
     <div class="ui modal delete">
       <!-- <i class="close icon"></i> -->
       <div class="header">
@@ -155,291 +182,9 @@
       </div>
     </div>
 
-    <script>
-      var jsonfile = require('jsonfile');
-      jsonfile.spaces = 2;
-      var logs = './userLog.json';
-      var userDB = './users.json';
-
-      // In memory array of users
-      var currUsers = [];
-      console.log('At Startup', currUsers);
-
-      // Main Event Loop
-      var timeout = null;
-      $('#input').on('keyup', function (e) {
-        clearTimeout(timeout);
-        timeout = setTimeout(function () {
-          // Gather inputs.
-          var input = $(e.target).val();
-          var valid = input.includes("%B564330");
-          var num = input.substring(8, 16);
-          var lastname = input.substring(input.indexOf('^') + 1, input.indexOf('/'));
-          var userSessionStart = moment();
-
-          console.log('At start', currUsers);
-
-          // React to swipe.
-          if (valid) {
-            var userPresent = currUsers.filter(function (elem, index, arr) { return elem.idnum == num; });
-            // console.log(userPresent[0].idnum);
-            if (Object.keys(userPresent).length > 0) {
-              // Remove and log user
-              console.log("Removing user", userPresent[0].idnum);
-              currUsers = currUsers.filter(function (user, index, arr) {
-                return user.idnum != userPresent[0].idnum;
-              });
-              var now = moment();
-              var hrs = now.diff(userPresent[0].sessionStart, 'hours');
-              var min = now.diff(userPresent[0].sessionStart, 'minutes');
-              var duration = hrs + " hrs : " + min + " min";
-              var log = {
-                'firstname': userPresent[0].firstname,
-                'lastname': userPresent[0].lastname,
-                'idnum': userPresent[0].idnum,
-                'level': userPresent[0].level,
-                'starttime': userPresent[0].sessionStart.format('L LT'),
-                'startmoment': userPresent[0].sessionStart,
-                'endtime': now.format('L LT'),
-                'duration': duration
-              }
-              jsonfile.readFile(logs, function(err, obj) {
-                if (err) throw err;
-                obj.main.push(log);
-                jsonfile.writeFileSync(logs, obj);
-                renderUserList();
-              });
-            } else {
-              // Add user
-              console.log("Adding user", num);
-              jsonfile.readFile(userDB, function(err, obj) {
-                if (err) throw err;
-                var tmpUserData = obj.main.filter(function (usr, idx) {
-                  return usr.idnum == num;
-                });
-                if (tmpUserData[0].level == 2) { alert("Please see professional staff."); }
-                tmpUserData[0].sessionStart = userSessionStart;
-                currUsers.push(tmpUserData[0]);
-                renderUserList();
-              });
-            }
-            $('#input').val('');
-          } else {
-            // Invalid Swipe
-            $('#input').val('');
-            $('#input').focus();
-            $('.fluid.action.input').addClass('error');
-          }
-        }, 500);
-      });
-
-      // UI
-      var resetUI = function () {
-        $('#input').focus();
-        $('#input').removeClass('error');
-        $('#add').addClass('disabled');
-        $('#edit').addClass('disabled');
-        $('#delete').addClass('disabled');
-        $('#provision').addClass('disabled');
-      }
-      resetUI();
-
-      var renderUserList = function () {
-        $('#userList').html('');
-        console.log('pre-render', currUsers);
-        currUsers.forEach(function (user) {
-          console.log(user);
-          $('#userList').append('<div class="item">' +
-              '<i class="configure icon"></i>' +
-              '<div class="content">' +
-                user.level + ' |  ' + user.idnum + ' | ' + user.firstname + ' ' + user.lastname +
-              '</div>' +
-          '</div>');
-        });
-        var authorization = currUsers.filter(function (item) {
-          return (item.level > 4);
-        });
-        // console.log(authorization);
-        if (authorization.length > 0) {
-          $('#add').removeClass('disabled');
-          // $('#edit').removeClass('disabled');
-          $('#delete').removeClass('disabled');
-          $('#provision').removeClass('disabled');
-        } else {
-          resetUI();
-        }
-      };
-
-      // Button Handlers
-
-      $('#all').on('click', function (e) {
-        e.preventDefault();
-        jsonfile.readFile(logs, function (err, obj) {
-          if (err) throw err;
-          obj.main.forEach(function (log, i) {
-            $('#logsList').append('<div class="item">' +
-                '<div class="content">' +
-                  i + ' | ' + log.level + ' |  ' + log.idnum + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
-                '</div>' +
-            '</div>');
-          });
-          $('.ui.modal.logs').modal('refresh').modal('show');
-        });
-      });
-
-      $('#today').on('click', function (e) {
-        e.preventDefault();
-        jsonfile.readFile(logs, function (err, obj) {
-          if (err) throw err;
-          var atm = moment();
-          obj.main.filter(function (log, indx) {
-            return moment(log.startmoment).isSame(atm, "day");
-          }).forEach(function (log, i) {
-            $('#logsList').append('<div class="item">' +
-                '<div class="content">' +
-                  i + ' | ' + log.level + ' |  ' + log.idnum + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
-                '</div>' +
-            '</div>');
-          });
-          $('.ui.modal.logs').modal('refresh').modal('show');
-        });
-      });
-
-      $('#reset').on('click', function (e) {
-        e.preventDefault();
-        $('#input').val('');
-        $('#input').focus();
-        $('.fluid.action.input').removeClass('error');
-      });
-
-      $('#shopjob').on('click', function (e) {
-        e.preventDefault();
-        var jobs = [
-          "Organize allen keys.",
-          "Clean up 'The Beast'.",
-          "Clean up the bandsaw area.",
-          "Organize the drill set box.",
-          "Place parallels back in the appropriate place.",
-          "Run through the entire speed range on the drill press.",
-          "Clean the files with compressed air.",
-          "Sweep floor.",
-          "Clean up by the red press.",
-          "Vacuum heating units behind prototracks.",
-          "Refill coolant containers.",
-          "Vacuum tops of drawer sets.",
-          "Clean shop glasses.",
-          "Cut new shop rags"
-        ];
-        var jobNum = Math.floor(Math.random() * jobs.length);
-        alert(jobs[jobNum]);
-      });
-
-      $('#add').on('click', function (e) {
-        e.preventDefault();
-        $('.ui.modal.add').modal('show');
-      });
-
-      $('#edit').on('click', function (e) {
-        e.preventDefault();
-        $('.ui.modal.edit').modal('show');
-      });
-
-      $('#delete').on('click', function (e) {
-        e.preventDefault();
-        $('.ui.modal.delete').modal('show');
-      });
-
-      $('#addCancel').on('click', function (e) {
-        e.preventDefault();
-        $('.ui.modal.add').modal('hide');
-      });
-
-      $('#editCancel').on('click', function (e) {
-        e.preventDefault();
-        $('.ui.modal.edit').modal('hide');
-      });
-
-      $('#deleteClose').on('click', function (e) {
-        e.preventDefault();
-        $('.ui.modal.delete').modal('hide');
-      })
-
-      $('#logsClose').on('click', function (e) {
-        e.preventDefault();
-        $('#logsList').html('');
-        $('.ui.modal.logs').modal('hide');
-      });
-
-      $('#deleteButton').on('click', function (e) {
-        e.preventDefault();
-        var idnum = $('.delete input[name="id-num"]').val();
-        jsonfile.readFile(userDB, function(err, obj) {
-          if (err) throw err;
-          obj.main.filter(function (usr, i) {
-            return usr.idnum != idnum;
-            jsonfile.writeFileSync(userDB, obj);
-          });
-        });
-      });
-
-      $('#addSave').on('click', function (e) {
-        e.preventDefault();
-        var firstname = $('.add input[name="first-name"]').val();
-        var lastname = $('.add input[name="last-name"]').val();
-        var idnum = $('.add input[name="id-num"]').val();
-        var level = $('.add #level').val();
-        var newUser = {
-          "firstname": firstname,
-          "lastname": lastname,
-          "idnum": idnum,
-          "level": level
-        }
-        jsonfile.readFile(userDB, function(err, obj) {
-          if (err) throw err;
-          obj.main.push(newUser);
-          jsonfile.writeFileSync(userDB, obj);
-        });
-        $('.ui.modal.add').modal('hide');
-      });
-
-      // TODO: Implement Edit
-      $('#editSave').on('click', function (e) {
-        e.preventDefault();
-        var firstname = $('.add input[name="first-name"]').val();
-        var lastname = $('.add input[name="last-name"]').val();
-        var idnum = $('.add input[name="id-num"]').val();
-        var level = $('.add #level').val();
-        $('.ui.modal.add').modal('hide');
-      });
-
-      $('#quit').on('click', function (e) {
-        e.preventDefault();
-        currUsers.forEach(function (usr, i) {
-          console.log("Removing user", usr.idnum);
-          var now = moment();
-          var hrs = now.diff(usr.sessionStart, 'hours');
-          var min = now.diff(usr.sessionStart, 'minutes');
-          var duration = hrs + " hrs : " + min + " min";
-          var log = {
-            'firstname': usr.firstname,
-            'lastname': usr.lastname,
-            'idnum': usr.idnum,
-            'level': usr.level,
-            'starttime': usr.sessionStart.format('L LT'),
-            'startmoment': usr.sessionStart,
-            'endtime': now.format('L LT'),
-            'duration': duration
-          };
-          jsonfile.readFile(logs, function(err, obj) {
-            if (err) throw err;
-            obj.main.push(log);
-            jsonfile.writeFileSync(logs, obj);
-          });
-        });
-        renderUserList();
-        nw.App.quit();
-      });
-    </script>
+    <!-- Functionality -->
+    <script src="./public/main.js"></script>
+    <script src="./public/button_handlers.js"></script>
 
   </body>
 </html>

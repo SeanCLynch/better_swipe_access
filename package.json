@@ -12,6 +12,9 @@
     "fullscreen": false
   },
   "dependencies": {
-    "jsonfile": "^2.4.0"
+    "jsonfile": "^2.4.0",
+    "lodash": "^4.16.2",
+    "lowdb": "^0.13.1",
+    "nedb": "^1.8.0"
   }
 }
