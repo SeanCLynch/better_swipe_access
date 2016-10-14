@@ -1,5 +1,7 @@
 // Example Swipe:
 // %B5643302765440301^LYNCH/JOHN C              ^491212000000?;5643302765440301=491212000000?
+// %B56433012345678
+// %B56433087654321
 
 // Setup
 var gui = require('nw.gui');
@@ -10,12 +12,32 @@ global.users = new Datastore({ filename: path.join(require('nw.gui').App.dataPat
 global.logs = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'logs.db'), autoload: true  });
 global.currUsers = [];
 
-
 $(function () {
 // Start Logs
-global.users.count({}, function (err, count1) {
-  global.logs.count({}, function (err, count2) {
+global.users.count({}, function (err1, count1) {
+  global.logs.count({}, function (err2, count2) {
     console.log('Init | U:', count1, 'L:', count2, 'C:', global.currUsers);
+    if (count1 <= 1) {
+      global.users.insert({
+        "firstname": 'Admin',
+        "lastname": 'Admin',
+        "_id": 12345678,
+        "level": 5,
+        "provisional": false
+      }, function (error, res) {
+        console.log("Admin Account Added, Copy This: %B56433012345678");
+      });
+    } else {
+      global.users.remove({ '_id': 12345678}, {}, function (err, numRem) {
+        global.users.find({}, function (err3, data) {
+          global.logs.find({}, function (err4, data2) {
+            console.log("Removed Admin", err, numRem);
+            console.log("All Logs", err4, data2);
+            console.log("All Docs", err3, data);
+          });
+        });
+      });
+    }
   });
 });
 
@@ -47,7 +69,7 @@ $('#input').on('keyup', function (e) {
         var log = {
           'firstname': swipedInUser[0].firstname,
           'lastname': swipedInUser[0].lastname,
-          '_id': swipedInUser[0]._id,
+          'idnum': swipedInUser[0]._id,
           'level': swipedInUser[0].level,
           'starttime': swipedInUser[0].sessionStart.format('L LT'),
           'startmoment': swipedInUser[0].sessionStart,
@@ -56,7 +78,7 @@ $('#input').on('keyup', function (e) {
         }
         // Insert Log
         global.logs.insert(log, function (err, resDoc) {
-          console.log("Inserted Log:", resDoc);
+          console.log("Inserted Log:", err, resDoc);
           renderUserList();
         });
 
@@ -65,7 +87,8 @@ $('#input').on('keyup', function (e) {
 
         // So check they exist, and add them.
         global.users.findOne({ _id: Number(num)}, function (err, res) {
-          if (!res) { alert("No Such User Exists!"); }
+          console.log("E", err, res);
+          if (!res) { alert("No Such User Exists!"); renderUserList(); return; }
           if (res.provisional) { alert("Please see professional staff."); }
           res.sessionStart = moment();
           global.currUsers.push(res);
@@ -81,7 +104,7 @@ $('#input').on('keyup', function (e) {
   }, 500);
 });
 
-// UI
+// UI Functions
 var resetUI = function () {
   $('#input').focus();
   $('#input').removeClass('error');

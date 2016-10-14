@@ -18,12 +18,7 @@ Access Levels:
  5. Admin
 
 TODOs:
-
-Finished Product:
-- Dry Run
-- Import Previous Users?
-
-Extras:
-- Code Clean
-- Logging
+- Export CSV Logs
 - Tool Loan
+- Color Coding Logged In Users
+- Logging & Code Clean

@@ -22,11 +22,12 @@ $('#addSave').on('click', function (e) {
   var newUser = {
     "firstname": firstname,
     "lastname": lastname,
-    "_id": _id,
+    "_id": Number(_id),
     "level": level,
     "provisional": prov
   }
   global.users.insert(newUser, function (err, resDoc) {
+    $('.add input[name="id-num"]').val('');
     $('.ui.modal.add').modal('hide');
   });
 });
@@ -45,9 +46,10 @@ $('#deleteClose').on('click', function (e) {
 
 $('#deleteButton').on('click', function (e) {
   e.preventDefault();
-  var _id = $('.delete input[name="id-num"]').val();
+  var _id = Number($('.delete input[name="id-num"]').val());
   global.users.remove({ '_id': _id}, {}, function (err, res) {
     $('.delete input[name="id-num"]').val('');
+    $('.ui.modal.delete').modal('hide');
   });
 });
 
@@ -69,17 +71,17 @@ $('#editSave').on('click', function (e) {
   var lastname = $('.edit input[name="last-name"]').val();
   var _id = $('.edit input[name="id-num"]').val();
   var level = $('.edit #level').val();
-  var prov = $('.add #provisional').is(':checked');
+  var prov = $('.edit #provisional').is(':checked');
   var updatedUser = {
     "firstname": firstname,
     "lastname": lastname,
-    "_id": _id,
+    "_id": Number(_id),
     "level": level,
     "provisional": prov
   }
-  global.users.update({ '_id': idnum}, updatedUser, {}, function (err, num, docs) {
+  global.users.update({ '_id': Number(_id)}, updatedUser, {}, function (err, num, docs) {
     console.log(err, num, docs);
-    $('.ui.modal.add').modal('hide');
+    $('.ui.modal.edit').modal('hide');
   });
 });
 
@@ -93,7 +95,7 @@ $('#all').on('click', function (e) {
       $('#logsList').append(
         '<div class="item">' +
           '<div class="content">' +
-            '#' + i + ' | ' + log.level + ' |  ' + log._id + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
+            '#' + i + ' | ' + log.level + ' |  ' + log.idnum + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
           '</div>' +
         '</div>'
       );
@@ -112,7 +114,7 @@ $('#today').on('click', function (e) {
     docs.forEach(function (log, i) {
       $('#logsList').append('<div class="item">' +
           '<div class="content">' +
-            '#' + i + ' | ' + log.level + ' |  ' + log._id + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
+            '#' + i + ' | ' + log.level + ' |  ' + log.idnum + ' ' + log.lastname + ' | ' + log.starttime + ' | ' + log.duration +
           '</div>' +
       '</div>');
     });

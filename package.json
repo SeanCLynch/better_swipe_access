@@ -1,7 +1,7 @@
 {
   "name": "Better_Swipe",
   "main": "index.html",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "window": {
     "title": "MEAM Swipe Access",
     "toolbar": false,
@@ -12,10 +12,6 @@
     "fullscreen": false
   },
   "dependencies": {
-    "jsonfile": "^2.4.0",
-    "lodash": "^4.16.2",
-    "lowdb": "^0.13.1",
-    "nedb": "^1.8.0",
-    "pouchdb": "^6.0.6"
+    "nedb": "^1.8.0"
   }
 }

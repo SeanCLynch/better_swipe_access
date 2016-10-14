@@ -7,10 +7,14 @@
     <script src="./public/external/jquery-3.1.0.js"></script>
     <script src="./public/external/semantic.js"></script>
     <script src="./public/external/moment.js"></script>
-    <script src="./node_modules/pouchdb/dist/pouchdb.min.js"></script>
+    <script src="./public/external/pouchdb-6.0.6.js"></script>
     <style>
       a {
         cursor: pointer;
+      }
+      ::selection {
+        background:rgba(255, 255, 125, 0.99)
+        color:#032764;
       }
     </style>
   </head>
@@ -41,23 +45,22 @@
             Controls
           </h4>
 
-          <div>
+          <div style="margin: 0 auto; width: 220px;">
             <button id="quit" class="ui red button">Close App</button>
             <button id="shopjob" class="ui purple button">Shop Job</button>
           </div>
 
           <br />
 
-          <div>
+          <div style="margin: 0 auto; width: 360px;">
             <button id="delete" class="ui red button">Delete User</button>
             <button id="edit" class="ui violet button">Modify User</button>
             <button id="add" class="ui blue button">Add User</button>
           </div>
 
-          <!-- <div class="ui horizontal divider"></div> -->
           <br />
 
-          <div>
+          <div style="margin: 0 auto; width: 230px;">
             <button id="all" class="ui teal button">All Logs</button>
             <button id="today" class="ui green button">Today's Logs</button>
           </div>
