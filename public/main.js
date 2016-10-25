@@ -8,8 +8,12 @@ var gui = require('nw.gui');
 var Datastore = require('nedb');
 var path = require('path');
 
-global.users = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'users.db'), autoload: true  });
-global.logs = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'logs.db'), autoload: true  });
+console.log(process.cwd(), process.env.PWD, path.resolve());
+
+global.users = new Datastore({ filename: path.join(path.resolve(), 'swipe_access_users.db'), autoload: true });
+global.logs = new Datastore({ filename: path.join(path.resolve(), 'swipe_access_logs.db'), autoload: true });
+// global.users = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'users.db'), autoload: true  });
+// global.logs = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'logs.db'), autoload: true  });
 global.currUsers = [];
 
 $(function () {

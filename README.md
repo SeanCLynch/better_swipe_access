@@ -10,6 +10,10 @@ To build windows version (or see nwbuild docs):
 
     nwbuild -p win32 .
 
+Default Admin User:
+
+    %B56433012345678
+
 Access Levels:
  1. In Training
  2. Normal
