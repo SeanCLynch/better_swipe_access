@@ -10,8 +10,8 @@ var path = require('path');
 
 console.log(process.cwd(), process.env.PWD, path.resolve());
 
-global.users = new Datastore({ filename: path.join(path.resolve(), 'swipe_access_users.db'), autoload: true });
-global.logs = new Datastore({ filename: path.join(path.resolve(), 'swipe_access_logs.db'), autoload: true });
+global.users = new Datastore({ filename: 'C:\\better_swipe\\swipe_access_users.db', autoload: true });
+global.logs = new Datastore({ filename: 'C:\\better_swipe\\swipe_access_logs.db', autoload: true });
 // global.users = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'users.db'), autoload: true  });
 // global.logs = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'logs.db'), autoload: true  });
 global.currUsers = [];
@@ -53,7 +53,18 @@ $('#input').on('keyup', function (e) {
     // Gather inputs.
     var input = $(e.target).val();
     var valid = input.includes("%B564330");
+    if (!valid) {
+      valid = input.includes("%B601496");
+    }
     var num = input.substring(8, 16);
+
+    /*
+    let input = $(e.target).val();
+    let num = input.substring(0, 8);
+    
+    if (num.length < 8) INVALID
+
+    */
 
     // Is the swipe valid/legible?
     if (valid) {

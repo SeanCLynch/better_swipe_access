@@ -1,5 +1,14 @@
 #Better Swipe Access
 
+* Input parsing is reasonably done, needs testing.
+* Check out excel4node https://www.npmjs.com/package/excel4node for exporting a csv file.
+* Maybe use readable stream or something over jquery 'keyup' 
+1. Create readable string from input value.
+2. Use readline module to trigger action when value appears. 
+3. Do the things.
+4. Clear input/reset UI.
+
+
 BSA is an ugly-yet-functional card-swipe access system built with nwjs (formerly node-webkit). Originally built to be used with a usb magnetic card reader. Users can swipe in and out, be added, modified or deleted, and have different levels of authorization. Also logs are kept of all user activity with start time, end time and duration.
 
 To run in development (on mac) (w/ nw.js installed) from better_swipe working directory:
