@@ -2,6 +2,9 @@
   "name": "Better_Swipe",
   "main": "index.html",
   "version": "1.0.0",
+  "scripts": {
+    "build_linux": "nwbuild -p linux64 --quiet ."
+  },
   "window": {
     "title": "MEAM Swipe Access",
     "toolbar": false,

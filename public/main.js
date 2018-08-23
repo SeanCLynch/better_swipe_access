@@ -45,6 +45,19 @@ global.users.count({}, function (err1, count1) {
   });
 });
 
+let stream = require('stream');
+let Readable = stream.Readable;
+
+document.addEventListener('DOMContentLoaded', function () {
+	console.log('event listener added');
+	document.querySelector('#input').onchange = changeEventHandler;
+}, false);
+
+function changeEventHandler(event) {
+	console.log(event.target.value);
+}
+
+/*
 // Main Event Loop
 var timeout = null;
 $('#input').on('keyup', function (e) {
@@ -57,14 +70,6 @@ $('#input').on('keyup', function (e) {
       valid = input.includes("%B601496");
     }
     var num = input.substring(8, 16);
-
-    /*
-    let input = $(e.target).val();
-    let num = input.substring(0, 8);
-    
-    if (num.length < 8) INVALID
-
-    */
 
     // Is the swipe valid/legible?
     if (valid) {
@@ -118,6 +123,7 @@ $('#input').on('keyup', function (e) {
     $('#input').val('');
   }, 500);
 });
+*/
 
 // UI Functions
 var resetUI = function () {
