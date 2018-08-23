@@ -1,4 +1,4 @@
-#Better Swipe Access
+# Better Swipe Access
 
 ## Features
 
@@ -10,7 +10,11 @@
 
 ## Installation
 
+Build for win32.
+
 Place into `C:\\better_swipe\current_version\`
+
+Be aware of paths for datastores and for csv export.
 
 Create desktop alias.
 
@@ -23,7 +27,7 @@ Access Levels:
  4. Staff
  5. Admin
 
-Default Admin User: %B56433012345678
+Default Admin User: (old)%B56433012345678 (new)12345678
 
 ## Development
 
@@ -43,15 +47,9 @@ MIT
 
 ## Notes/Future Additions
 
-* Input parsing is reasonably done, needs testing.
-* Check out excel4node https://www.npmjs.com/package/excel4node for exporting a csv file.
-* Maybe use readable stream or something over jquery 'keyup' 
-1. Create readable string from input value.
-2. Use readline module to trigger action when value appears. 
-3. Do the things.
-4. Clear input/reset UI.
-
-TODOs:
 - Tool Loan
 - Color Coding Logged In Users
 - Logging & Code Clean
+- Fix paths between win & linux.
+- Find a better method for main event loop.
+
