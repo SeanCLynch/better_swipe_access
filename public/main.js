@@ -1,7 +1,3 @@
-// Example Swipe:
-// %B5643302765440301^LYNCH/JOHN C              ^491212000000?;5643302765440301=491212000000?
-// %B56433012345678
-// %B56433087654321
 
 // Setup
 var gui = require('nw.gui');
@@ -17,6 +13,7 @@ global.logs = new Datastore({ filename: 'C:\\better_swipe\\swipe_access_logs.db'
 global.currUsers = [];
 
 $(function () {
+
 // Start Logs
 global.users.count({}, function (err1, count1) {
   global.logs.count({}, function (err2, count2) {
@@ -45,87 +42,101 @@ global.users.count({}, function (err1, count1) {
   });
 });
 
-let stream = require('stream');
-let Readable = stream.Readable;
 
-document.addEventListener('DOMContentLoaded', function () {
-	console.log('event listener added');
-	document.querySelector('#input').onchange = changeEventHandler;
-}, false);
 
-function changeEventHandler(event) {
-	console.log(event.target.value);
-}
-
-/*
 // Main Event Loop
-var timeout = null;
+let timeout = null;
+
 $('#input').on('keyup', function (e) {
+
   clearTimeout(timeout);
+
   timeout = setTimeout(function () {
-    // Gather inputs.
-    var input = $(e.target).val();
-    var valid = input.includes("%B564330");
-    if (!valid) {
-      valid = input.includes("%B601496");
-    }
-    var num = input.substring(8, 16);
 
-    // Is the swipe valid/legible?
-    if (valid) {
-      var swipedInUser = global.currUsers.filter(function (elem) { return elem._id == num; });
+    // Gather input.
+    var num = $(e.target).val();
+    let valid = num.length == 8;
 
-      // Is there a swiped in user?
-      if (Object.keys(swipedInUser).length > 0) {
-        // console.log("Removing user", swipedInUser[0]._id);
-
-        // Remove user from currUsers
-        global.currUsers = global.currUsers.filter(function (user) { return user._id != swipedInUser[0]._id; });
-        // Generate Log
-        var now = moment();
-        var hrs = now.diff(swipedInUser[0].sessionStart, 'hours');
-        var min = now.diff(swipedInUser[0].sessionStart, 'minutes');
-        var duration = hrs + " hrs : " + min + " min";
-        var log = {
-          'firstname': swipedInUser[0].firstname,
-          'lastname': swipedInUser[0].lastname,
-          'idnum': swipedInUser[0]._id,
-          'level': swipedInUser[0].level,
-          'starttime': swipedInUser[0].sessionStart.format('L LT'),
-          'startmoment': swipedInUser[0].sessionStart,
-          'endtime': now.format('L LT'),
-          'duration': duration
-        }
-        // Insert Log
-        global.logs.insert(log, function (err, resDoc) {
-          console.log("Inserted Log:", err, resDoc);
-          renderUserList();
-        });
-
-      } else { // There is no swiped in user.
-        // console.log("Adding user", num);
-
-        // So check they exist, and add them.
-        global.users.findOne({ _id: Number(num)}, function (err, res) {
-          console.log("E", err, res);
-          if (!res) { alert("No Such User Exists!"); renderUserList(); return; }
-          if (res.provisional) { alert("Please see professional staff."); }
-          res.sessionStart = moment();
-          global.currUsers.push(res);
-          renderUserList();
-        });
-      }
-    } else { // The swipe is invalid.
+    // Handle invalid swipes.
+    if (num.length != 8) {
       $('#input').focus();
       $('.fluid.action.input').addClass('error');
+      return;
     }
+
     // Cleanup
     $('#input').val('');
-  }, 500);
-});
-*/
 
+    // Get current user, if any.
+    let currentUser = getSwipedInUser(num);
+    
+    if (currentUser) { // Log out.
+      console.log('removing user', currentUser._id);
+
+      // Remove currentUser from currUsers
+      global.currUsers = global.currUsers.filter(function (user) { return user._id != currentUser._id; });
+
+      let logEntry = generateLog(currentUser);
+
+      // Insert Log
+      global.logs.insert(logEntry, function (err, resDoc) {
+        console.log("Inserted Log:", err, resDoc);
+        renderUserList();
+      });
+
+    } else { // Log in.
+      console.log('adding user', num);
+
+      // So check they exist, and add them.
+      global.users.findOne({ _id: Number(num)}, function (err, res) {
+        console.log("E", err, res);
+        if (!res) { alert("No Such User Exists!"); renderUserList(); return; }
+        if (res.provisional) { alert("Please see professional staff."); }
+        res.sessionStart = moment();
+        global.currUsers.push(res);
+        renderUserList();
+      });
+    }
+
+  }, 500); // end setTimeout.
+
+});
+
+// ================
+// Helper Functions
+// ================
+
+// Returns the swiped in user, otherwise returns null.
+function getSwipedInUser (user_id) {
+  let matchingUser = global.currUsers.filter(function (elem) { return elem._id == user_id; });
+  let user = (matchingUser.length == 1) ? matchingUser[0] : null;
+  return user;
+}
+
+// Creates log object for database. 
+function generateLog (currentUser) {
+  var now = moment();
+  var hrs = now.diff(currentUser.sessionStart, 'hours');
+  var min = now.diff(currentUser.sessionStart, 'minutes');
+  var duration = hrs + " hrs : " + min + " min";
+  var log = {
+    'firstname': currentUser.firstname,
+    'lastname': currentUser.lastname,
+    'idnum': currentUser._id,
+    'level': currentUser.level,
+    'starttime': currentUser.sessionStart.format('L LT'),
+    'startmoment': currentUser.sessionStart,
+    'endtime': now.format('L LT'),
+    'duration': duration
+  }
+  return log;
+}
+
+// ============
 // UI Functions
+// ============
+
+// Resets the UI to its normal state. 
 var resetUI = function () {
   $('#input').focus();
   $('#input').removeClass('error');
@@ -136,18 +147,20 @@ var resetUI = function () {
 }
 resetUI();
 
+// Renders the list of users on the main page. 
 var renderUserList = function () {
-  // console.log("Rendering:", currUsers);
 
   // Update the member list UI.
   $('#userList').html('');
   global.currUsers.forEach(function (user) {
-    $('#userList').append('<div class="item">' +
+    $('#userList').append(
+      '<div class="item">' +
         '<i class="configure icon"></i>' +
         '<div class="content">' +
           user.level + (user.provisional ? 'P' : ' ') + ' |  ' + user._id + ' | ' + user.firstname + ' ' + user.lastname +
         '</div>' +
-    '</div>');
+      '</div>'
+    );
   });
 
   // Check for authorization level.
@@ -159,5 +172,6 @@ var renderUserList = function () {
   } else {
     resetUI();
   }
-};
-});
+}; // end renderUserList
+
+}); // end closure
