@@ -87,6 +87,14 @@ $('#editSave').on('click', function (e) {
 
 // ========= Logs =========
 
+$('#export').on('click', function (e) {
+  e.preventDefault();
+
+  console.log('exporting csv file');
+
+  global.exportLogs();
+});
+
 $('#all').on('click', function (e) {
   e.preventDefault();
   // (((HERE)))

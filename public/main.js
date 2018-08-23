@@ -2,14 +2,19 @@
 // Setup
 var gui = require('nw.gui');
 var Datastore = require('nedb');
+let fs = require('fs');
+let json2csv = require('json2csv').Parser;
+
+
+// could use path.join and any of the following as the 'filename' arg to try and automatically load db.
+// console.log(process.cwd(), process.env.PWD, path.resolve(), gui.App.dataPath);
 var path = require('path');
+// global.users = new Datastore({ filename: path.join(process.env.PWD, 'swipe_access_users.db'), autoload: true });
+// global.logs = new Datastore({ filename: path.join(process.env.PWD, 'swipe_access_logs.db'), autoload: true });
 
-console.log(process.cwd(), process.env.PWD, path.resolve());
-
+// DBs for production.
 global.users = new Datastore({ filename: 'C:\\better_swipe\\swipe_access_users.db', autoload: true });
 global.logs = new Datastore({ filename: 'C:\\better_swipe\\swipe_access_logs.db', autoload: true });
-// global.users = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'users.db'), autoload: true  });
-// global.logs = new Datastore({ filename: path.join(require('nw.gui').App.dataPath, 'logs.db'), autoload: true  });
 global.currUsers = [];
 
 $(function () {
@@ -26,7 +31,7 @@ global.users.count({}, function (err1, count1) {
         "level": 5,
         "provisional": false
       }, function (error, res) {
-        console.log("Admin Account Added, Copy This: %B56433012345678");
+        console.log("Admin Account Added, Copy This: %B56433012345678 12345678 42009755");
       });
     } else {
       global.users.remove({ '_id': 12345678}, {}, function (err, numRem) {
@@ -43,8 +48,10 @@ global.users.count({}, function (err1, count1) {
 });
 
 
-
+// ===============
 // Main Event Loop
+// ===============
+
 let timeout = null;
 
 $('#input').on('keyup', function (e) {
@@ -56,6 +63,7 @@ $('#input').on('keyup', function (e) {
     // Gather input.
     var num = $(e.target).val();
     let valid = num.length == 8;
+    $('#input').val('');
 
     // Handle invalid swipes.
     if (num.length != 8) {
@@ -64,32 +72,32 @@ $('#input').on('keyup', function (e) {
       return;
     }
 
-    // Cleanup
-    $('#input').val('');
-
     // Get current user, if any.
     let currentUser = getSwipedInUser(num);
-    
-    if (currentUser) { // Log out.
-      console.log('removing user', currentUser._id);
+
+    if (currentUser) { 
+      // ===== SWIPE OUT ===== //
+      console.debug('swiping out user id:', currentUser._id);
 
       // Remove currentUser from currUsers
       global.currUsers = global.currUsers.filter(function (user) { return user._id != currentUser._id; });
 
+      // Generate log entry.
       let logEntry = generateLog(currentUser);
 
       // Insert Log
       global.logs.insert(logEntry, function (err, resDoc) {
-        console.log("Inserted Log:", err, resDoc);
+        console.debug(err, resDoc);
         renderUserList();
       });
 
-    } else { // Log in.
-      console.log('adding user', num);
+    } else { 
+      // ===== SWIPE IN ===== //
+      console.debug('swiping in user id:', num);
 
       // So check they exist, and add them.
       global.users.findOne({ _id: Number(num)}, function (err, res) {
-        console.log("E", err, res);
+        console.debug(err, res);
         if (!res) { alert("No Such User Exists!"); renderUserList(); return; }
         if (res.provisional) { alert("Please see professional staff."); }
         res.sessionStart = moment();
@@ -118,7 +126,7 @@ function generateLog (currentUser) {
   var now = moment();
   var hrs = now.diff(currentUser.sessionStart, 'hours');
   var min = now.diff(currentUser.sessionStart, 'minutes');
-  var duration = hrs + " hrs : " + min + " min";
+  var duration = hrs + " hrs : " + (min % 60) + " min";
   var log = {
     'firstname': currentUser.firstname,
     'lastname': currentUser.lastname,
@@ -130,6 +138,29 @@ function generateLog (currentUser) {
     'duration': duration
   }
   return log;
+}
+
+// Export a .csv file of all the logs up to this point. 
+global.exportLogs = function () {
+  console.log('exporting logs from here');
+
+  let fields = ['firstname', 'lastname', '_id', 'idnum', 'level', 'starttime', 'endtime', 'duration'];
+  let opts = { fields };
+
+  global.logs.find({}, function (error, data) {
+    try {
+      let parser = new json2csv(opts);
+      let csv = parser.parse(data);
+      // let filename = path.join(process.env.PWD, 'test.csv');
+      let filename = "C:\\better_swipe\\logs.csv";
+      fs.writeFile(filename, csv, 'utf8', function (err) {
+        console.log(err);
+      });
+    } catch (err) {
+      console.log(err);
+    }
+  });
+
 }
 
 // ============
@@ -144,6 +175,7 @@ var resetUI = function () {
   $('#edit').addClass('disabled');
   $('#delete').addClass('disabled');
   $('#provision').addClass('disabled');
+  $('#export').addClass('disabled');
 }
 resetUI();
 
@@ -169,9 +201,10 @@ var renderUserList = function () {
     $('#add').removeClass('disabled');
     $('#edit').removeClass('disabled');
     $('#delete').removeClass('disabled');
+    $('#export').removeClass('disabled');
   } else {
     resetUI();
   }
-}; // end renderUserList
+};
 
 }); // end closure
